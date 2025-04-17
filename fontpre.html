@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';"> -->
+  <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-abc123def456gh789ijklmnop';"> -->
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'nonce-randomValue';">
+<!-- 
+  <meta http-equiv="Content-Security-Policy" content="connect-src 'self' 'unsafe-inline';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'"> -->
+
+  <title>OTZAR Font Previewer</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--body-bg);
+    display: flex;
+}
+
+:root {
+  --body-bg: #ececec;/* #f4f4f4 */
+  --editor-bg: #fff;
+  --editor-cl: black;
+  --btn-cl: #fff;
+  --btn-bg: #073c8b;
+  --btn-bg-hvr: #05275a;
+  --topbar-bg: #e1edff;
+  --topbar-cl: #000;
+  --aln-btn-bg-hvr:#2d68d61a;
+
+
+  --trnsn: 0.2s;
+
+}
+
+
+.flexpage {
+  display: flex;
+  max-width: 100%;
+  max-height: 100vh;
+  transition: 0.2s;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  align-content: space-between;
+  align-items: stretch;
+  min-width: 100%;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.text-editor {
+    font-feature-settings: "ss12", "cv66" !important;
+    max-width: 100%;
+    width: 85%;
+    font-size: 80px;
+    border: 0px solid #ccc;
+    text-align: justify;
+    text-align-last: center;
+    border-radius: 4px;
+    resize: none;
+    min-height: 74vh;
+    height: calc(100% - 20px);
+    min-width: 80vw;
+    top: 0;
+    z-index: 1;
+    color: var(--editor-cl);
+    position: relative;
+    overflow: scroll;
+    padding: 20px;
+    background-color: var(--editor-bg);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px 8px 0 0;
+    margin: 20px;
+    direction: rtl;
+    flex-grow: 4;
+    margin-bottom: 0;
+    box-sizing: border-box;
+    transition: 0.2s, width 2.5s, position 0s, font-size 0s, color 0s, background-color 0s;
+    transition-duration: 0;
+    transition-timing-function: font-size cubic-bezier(0.075, 0.82, 0.165, 1);
+    font-family: current-font;
+  }
+
+.text-editor:focus-within {
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.418);
+  -webkit-user-drag: none;
+
+}
+
+.text-editor p, .text-editor div {
+  margin-top:0;
+  margin-bottom:0.5rem;
+  -webkit-user-drag: none;
+}
+
+
+.text-editor.fullscreen {
+    position: absolute;
+    z-index: 99;
+    min-width: 100%;
+    height: 100%;
+    margin: 0;
+    right:0;
+    transition-delay: position 10s;
+
+
+}
+
+.slider-container, .font-name-container, .upload-container {
+  margin-top: 20px;
+  justify-content: center;
+  align-items: center;
+}
+
+.font-name {
+  font-size: 20px;
+  box-sizing: border-box;
+  word-wrap: break-word;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+input[type="file"], input[type="color"], input[type="range"] {
+  margin-top: 10px; /* Space above inputs */
+  font-size: 16px;
+  border: 1px solid #ccc; /* Border for inputs */
+  border-radius: 5px; /* Rounded corners */
+  padding: 5px; /* Padding for inputs */
+  width: calc(100% - 12px); /* Full width minus padding */
+  width: 100%; /* Full width for range sliders */
+  margin:auto 0;
+  box-sizing: border-box;
+  accent-color: var(--btn-bg);
+}
+
+input[type="file"] {
+  font-size: 115%;
+}
+
+input[type="range"] {
+  padding: 0px; /* Padding for inputs */
+  justify-content: center;
+  align-items: center;
+}
+
+#fileInput.uploadfoverlay {
+      position: fixed;
+    top: 0;
+    z-index: 89;
+    left: 0;
+    height: 100%;
+    background: #fff;
+    width: 100%;
+    opacity: 1;
+    font-size: 100%;
+    }
+
+input::after {
+  content: \u003;
+}
+
+#fontSizeValue, #lineSpacingValue, #fontWeightValue, #fontWidthValue {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-height: 100%;
+      z-index: 2;
+      right: 0;
+      field-sizing: content;
+      font-size: 24px;
+      border: 0px solid #ccc;
+      min-height: 100vh;
+      box-sizing: border-box;
+      overflow: scroll;
+      color: var(--topbar-cl);
+      background-color: var(--topbar-bg);
+      border-right: 2px solid #ccc;
+      height: 100vh;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      position: relative;
+      top: 0;
+      flex-shrink: 1;
+      max-width:250px;
+      margin-left: 0%;
+      width: 250px;
+      transition: var(--trnsn);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      flex: 40%;
+      resize: horizontal;
+    }
+
+    .top-bar.close {
+      max-width: 14%;
+      margin-left: -14%;
+      width: 14%;
+    }
+
+
+    .top-bar .container {
+      display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px;
+    box-sizing: border-box;
+    }
+
+    .cpl {
+      width:40px;
+      height:40px;
+      max-height:40px;
+      font-size: 50px;
+      text-decoration: underline;
+      text-decoration-thickness: 8px;
+      line-height: 0.4;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      margin: 2px;
+      padding: 10px;
+    }
+    .color-picker {
+        margin-right: 20px;
+    }
+
+
+
+
+button {
+  width:100%;
+    margin: 5px 0; /* Space between buttons */
+    padding: 10px 15px; /* Padding for buttons */
+    background-color: var(--btn-bg); /* Bootstrap primary color */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    color: var(--btn-cl); /* Text color */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: var(--trnsn); /* Smooth transition */
+}
+
+button:hover {
+    background-color: var(--btn-bg-hvr); /* Darker shade on hover */
+}
+
+
+.alignbtns {
+  display: flex;
+  gap: 0px;
+  width: 100%;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  flex-direction: row;
+  border: 2px solid var(--topbar-cl);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.alignbtns svg {
+    width: 30px;
+    fill: var(--btn-bg);
+}
+
+
+
+.top-bar .alignbtns button {
+      height: auto;
+      width: 30%;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      margin: 2px;
+      padding: 10px;  
+    }
+
+    .top-bar .alignbtns button:hover {
+      background: var(--aln-btn-bg-hvr);
+      
+    }
+
+
+
+button svg {
+      height:100%;
+    }
+
+[hidden]{
+      display:none;
+    }
+
+    .upload-btn-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  width:100%;
+}
+
+.upload-btn-wrapper .btn {
+  border: 2px solid var(--btn-bg);
+  color: var(--btn-bg);
+  background-color: var(--btn-cl);
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.upload-btn-wrapper .btn {
+  border: 2px solid var(--btn-bg-hvr);
+  color: var(--btn-bg-hvr);
+  background-color: transparent;
+  transition: 0.2s;
+}
+
+.upload-btn-wrapper:hover .btn {
+  border: 2px dashed var(--btn-bg-hvr);
+  color: var(--btn-bg-hvr);
+  background:  #fff;
+}
+
+.upload-btn-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
+
+  .page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: relative;
+  }
+
+  .fileInput {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-family: 'Oswald', sans-serif;
+    font-size: 1rem;
+  }
+
+  .fileInput::file-selector-button {
+    background-color: transparent;
+    color: white;
+    cursor: pointer;
+    border: none;
+    padding: 0.5rem;
+  }
+
+
+  .fontuppage {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #787878ba;
+    padding: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  #form-file-upload {
+    height: 39rem;
+    width: 86%;
+    max-width: 100%;
+    text-align: center;
+    position: relative;
+  }
+
+  .fontuppage #fileInput {
+    display: none;
+  }
+
+  #label-file-upload {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-width: 6px;
+    border-radius: 1rem;
+    border-style: dashed;
+    border-color: #ffffff;
+    background-color: #f8fafc69;
+    transition: var(--trnsn);
+    backdrop-filter: blur(7px);
+    font-size: 41px;
+    animation: blink-border 1s infinite;
+    background-clip: content-box;
+
+  }
+
+  @keyframes blink-border {
+    0%, 100% {
+    border-color: #cbd5e1;
+    background-clip: content-box;
+}
+
+50% {
+    border-color: #000000;
+    background-clip: border-box;
+}
+  }
+
+  .fontuppage .upload-button {
+    cursor: pointer;
+    padding: 1.25rem;
+    font-size: 2rem;
+    border: none;
+    font-family: 'Oswald', sans-serif;
+    background-color: #000000;
+    color: #ffffff;
+  }
+
+  .fontuppage .upload-button:hover {
+    text-decoration-line: underline;
+  }
+
+
+input[type=file]::file-selector-button:hover {text-align: center;}
+   
+
+#sidetoggle {
+  position: absolute;
+  top:15px;left:15px;
+  z-index: 999;
+  height:fit-content;
+  background: var(--btn-bg);
+  color:var(--btn-cl);
+  padding: 5px 13px 8px 13px;
+  font-size: 29px; 
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  user-select: none;
+  cursor:pointer;
+  transition: var(--trnsn);
+}
+
+#sidetoggle:hover {
+  background: var(--btn-bg-hvr);
+}
+
+
+.printbtn svg {
+ width: 40px;
+}
+
+
+
+@media print {
+  body { background: transparent}
+  .top-bar {display:none;}
+  .text-editor{margin:auto;box-shadow: 0 0 0 0 transparent; }
+  .flexpage {max-height:50000000000000000000000000000000000000000000%;}
+  #sidetoggle {display: none;}
+}
+
+@media only screen and (max-width: 460px) {
+  
+}
+</style></head>
+<body>
+  <a  id="sidetoggle">☰</a>
+<!-- Hidden pop-up for drag-and-drop -->
+<div class="fontuppage hidden" id="upload-popup">
+  <h1>Upload Your Font</h1>
+  <div id="form-file-upload">
+    <input type="file" id="fileInputPopup" multiple="" style="font-size: 100px;position: absolute;left: 0;top: 0;opacity: 0;">
+    <label id="label-file-upload" for="fileInputPopup">
+      <div>
+        <p>Drag and drop your font file here or</p>
+        <button type="button" class="upload-button">Upload a file</button>
+      </div>
+    </label>
+  </div>
+</div>
+  <div class="flexpage">
+    
+    <div class="top-bar" id="topbar">
+      <div class="container">
+        <div>
+          <div class="upload-btn-wrapper">
+            <button class="btn" type="button">Upload a file</button>
+            <input type="file" id="fileInputMain" class="fileInput" />
+          </div>
+          
+      
+      <button id="loadFontButton"><svg xmlns="http://www.w3.org/2000/svg" fill="var(--btn-cl)" viewBox="0 0 512 512" style="
+        width: 16px;
+        height: auto;
+        margin-bottom: -3px;
+        margin-right: 8px;
+    "><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"></path></svg> Download Font</button>
+    </div>
+    <div class="font-name" id="fontname">Loading font...</div>
+    
+  <div style="display:flex;align-items: center;">
+   
+  <label for="cp" class="cpl" style="text-shadow: 2px 3px 0px; text-decoration-color: var(--editor-cl);   text-shadow: rgb(0 0 0) 0px 0px 1px; ">א </label>
+  <input type="color" id="cp" style="display:none;width:100px;" class="color-picker" onchange="changeTextColor(event)">
+  <label for="bgcp" class="cpl" style="text-decoration-color: var(--editor-bg);border:1px solid var(--topbar-cl); border-radius: 10px;"><div style="background:yellow;height: 30px;">א</div></label>
+  <input type="color" id="bgcp" style="display:none;width:100px;" class="bgcolor-picker">
+  <div class="printbtn cpl" id="print"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  viewBox="1 1 16 16" version="1.1"><g xmlns="http://www.w3.org/2000/svg" transform=""><path fill-rule="evenodd" d="M13,14 L3,14 L3,11 L0,11 L0,6.00591905 C0,4.89808055 0.894513756,4 1.99406028,4 L14.0059397,4 C15.1072288,4 16,4.88655484 16,6.00591905 L16,11 L13,11 L13,14 Z M5,9 L11,9 L11,12 L5,12 L5,9 Z M3,0 L13,0 L13,3 L3,3 L3,0 Z M12,6 L14,6 L14,8 L12,8 L12,6 Z" transform="translate(1 2)"/></g></svg></div>
+
+</div>
+  <div style="display: flex;">
+    <div class="alignbtns">
+      <h1 style="width: 100%;margin: 5px 0 5px 0px;font-size: 16px;">text alignment</h1>
+  <button id="alignLeftButton"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M288 64c0 17.7-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32H256c17.7 0 32 14.3 32 32zm0 256c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H256c17.7 0 32 14.3 32 32zM0 192c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></button>
+  <button id="alignCenterButton"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M352 64c0-17.7-14.3-32-32-32H128c-17.7 0-32 14.3-32 32s14.3 32 32 32H320c17.7 0 32-14.3 32-32zm96 128c0-17.7-14.3-32-32-32H32c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32zM0 448c0 17.7 14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H32c-17.7 0-32 14.3-32 32zM352 320c0-17.7-14.3-32-32-32H128c-17.7 0-32 14.3-32 32s14.3 32 32 32H320c17.7 0 32-14.3 32-32z"/></svg></button>
+  <button id="alignRightButton"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M448 64c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32zm0 256c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32zM0 192c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></button>
+  <button id="alignJustifyButton"><svg viewBox="0 0 800 800" style="margin-left: -3px;"><path xmlns="http://www.w3.org/2000/svg" d="M926.5,190.5 C926.5,205.5 914.5,216.5 900.5,216.5 L590.5,216.5 C576.5,216.5 564.5,205.5 564.5,190.5 C564.5,176.5 576.5,165.5 590.5,165.5 L900.5,165.5 C914.5,165.5 926.5,176.5 926.5,190.5 M926.5,396.5 C926.5,411.5 914.5,422.5 900.5,422.5 L590.5,422.5 C576.5,422.5 564.5,411.5 564.5,396.5 C564.5,382.5 576.5,371.5 590.5,371.5 L900.5,371.5 C914.5,371.5 926.5,382.5 926.5,396.5 M564.5,293.5 C564.5,279.5 576.5,268.5 590.5,268.5 L900.5,268.5 C914.5,268.5 926.5,279.5 926.5,293.5 C926.5,308.5 914.5,319.5 900.5,319.5 L590.5,319.5 C576.5,319.5 564.5,308.5 564.5,293.5 M854.5,499.5 C854.5,514.5 844.5,525.5 831.5,525.5 L656.5,525.5 C643.5,525.5 632.5,514.5 632.5,499.5 C632.5,485.5 643.5,474.5 656.5,474.5 L831.5,474.5 C844.5,474.5 854.5,485.5 854.5,499.5 " width="277" transform="matrix(1,0,0,1,0,0)" style="transform: scale(2) translate(-68%, -18%);"></path></svg></button>
+  <button id="alignJustifyRightButton"><svg viewBox="0 0 700 700" style="margin-left: -3px;"><path xmlns="http://www.w3.org/2000/svg" d="M1024.5,144.5 C1024.5,170.5 1003.5,190.5 978.5,190.5 L431.5,190.5 C405.5,190.5 385.5,170.5 385.5,144.5 C385.5,119.5 405.5,99.5 431.5,99.5 L978.5,99.5 C1003.5,99.5 1024.5,119.5 1024.5,144.5 M1024.5,509.5 C1024.5,535.5 1003.5,555.5 978.5,555.5 L431.5,555.5 C405.5,555.5 385.5,535.5 385.5,509.5 C385.5,484.5 405.5,464.5 431.5,464.5 L978.5,464.5 C1003.5,464.5 1024.5,484.5 1024.5,509.5 M385.5,327.5 C385.5,302.5 406.5,282.5 431.5,282.5 L978.5,282.5 C1003.5,282.5 1024.5,302.5 1024.5,327.5 C1024.5,353.5 1003.5,372.5 978.5,372.5 L431.5,372.5 C406.5,372.5 385.5,353.5 385.5,327.5 M1024.5,691.5 C1024.5,717.5 1005.5,737.5 982.5,737.5 L674.5,737.5 C650.5,737.5 631.5,717.5 631.5,691.5 C631.5,666.5 650.5,646.5 674.5,646.5 L982.5,646.5 C1005.5,646.5 1024.5,666.5 1024.5,691.5 " style="transform: scale(1) translate(-51%, -10%);"></path></svg></button>
+  <button id="alignJustifyFullButton"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M448 64c0-17.7-14.3-32-32-32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32zm0 256c0-17.7-14.3-32-32-32H32c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32zM0 192c0 17.7 14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H32c-17.7 0-32 14.3-32 32zM448 448c0-17.7-14.3-32-32-32H32c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32z"/></svg></button>
+  <!-- <button ><svg viewBox="0 0 700 700"><path xmlns="http://www.w3.org/2000/svg" d="M761.5,185.5 C761.5,209.5 742.5,227.5 719.5,227.5 L534.5,227.5 C510.5,227.5 492.5,209.5 492.5,185.5 C492.5,163.5 510.5,144.5 534.5,144.5 L719.5,144.5 C742.5,144.5 761.5,163.5 761.5,185.5 M1074.5,518.5 C1074.5,542.5 1055.5,560.5 1033.5,560.5 L534.5,560.5 C510.5,560.5 492.5,542.5 492.5,518.5 C492.5,495.5 510.5,477.5 534.5,477.5 L1033.5,477.5 C1055.5,477.5 1074.5,495.5 1074.5,518.5 M492.5,352.5 C492.5,329.5 511.5,311.5 534.5,311.5 L719.5,311.5 C742.5,311.5 761.5,329.5 761.5,352.5 C761.5,375.5 742.5,393.5 719.5,393.5 L534.5,393.5 C511.5,393.5 492.5,375.5 492.5,352.5 M966.5,684.5 C966.5,708.5 949.5,726.5 928.5,726.5 L647.5,726.5 C625.5,726.5 608.5,708.5 608.5,684.5 C608.5,661.5 625.5,643.5 647.5,643.5 L928.5,643.5 C949.5,643.5 966.5,661.5 966.5,684.5 M1075.5,190.5 C1075.5,223.5 1049.5,249.5 1016.5,249.5 L896.5,249.5 C863.5,249.5 837.5,223.5 837.5,190.5 C837.5,159.5 863.5,133.5 896.5,133.5 L1016.5,133.5 C1049.5,133.5 1075.5,159.5 1075.5,190.5 " style="transform: scale(1) translate(-62%, -11%);"></path></svg></button> --> 
+</div></div>
+
+<!-- Font Size -->
+<label for="fontSizeSlider">Font Size:</label>
+<input type="range" id="fontSizeSlider" min="10" max="300" value="80">
+<span id="fontSizeValue">80px</span> 
+
+<!-- Line Spacing -->
+<label for="lineSpacingSlider">Line Spacing:</label>
+<input type="range" id="lineSpacingSlider" min="1" max="3" step="0.01" value="1.5">
+<span id="lineSpacingValue">1.5</span>
+
+<!-- Font Weight -->
+<label for="fontWeightSlider">Font Weight:</label>
+<input type="range" id="fontWeightSlider" min="100" max="900" step="5" value="400">
+<span id="fontWeightValue">400</span>
+
+<!-- Font Width -->
+<label for="fontWidthSlider">Font Width:</label>
+<input type="range" id="fontWidthSlider" min="50" max="200" value="100">
+<span id="fontWidthValue">100</span>
+
+<!-- Font Optical Size -->
+<label for="opticalSizeSlider">Optical Size:</label>
+<input type="range" id="opticalSizeSlider" min="1" max="100" step="1"  value="12">
+<span id="opticalSizeValue">400</span>
+
+
+<button id="removeNikkudBtn">Remove Nikkud</button>
+    <button id="removeTaamBtn">Remove Taam</button>
+
+  </div></div>
+    <!-- Preview Textarea -->
+    <div id="previewText" class="text-editor" contenteditable="true" rows="50">
+    <p style="font-size:2em;">אגץ</p>    
+    <p>
+      א֗בגדהוזחטיכךל_מםנןסעָﬠָפַףצץקֲרְֿשת ליקוטי סֵדֶר הַגְבָּהַת סֶפֶר תּוֹרָה אגרות–קודש בִּירוּשָׁלִָם: נִשְֹרָפִין סדר הגבהת ספר תורה כ"ק אדמו"ר רא שליט"א  ב__ ח"ד, ע' נא  בְּחֹרֵב מָׁיחַ שַׁחֲרִית וַיַּ֧רְא וַתַּֽעַשׂ מַעֲשֽׂיהָ גן ישראל ךָ אמרים -תניא גַן יִשְׂרָﭏֶֹ אֱ֥ן- וַיְדַבֵּ֥ר יְהֹוָ֖ה אֶל־משֶׁ֥ה לֵּתתאמֹֽר: “הואיל משה באר את התורה הזאת”&nbsp;</p><p>בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ: וְהָאָ֗רֶץ הָֽיְתָ֥ה תֹ֨הוּ֙ וָבֹ֔הוּ וְח֖שֶׁךְ עַל־פְּנֵ֣י תְה֑וֹם וְר֣וּחַ אֱלֹהִ֔ים מְרַחֶ֖פֶת עַל־פְּנֵ֥י הַמָּֽיִם: וַיֹּ֥אמֶר אֱלֹהִ֖ים יְהִי־א֑וֹר וַֽיְהִי־אֽוֹר: וַיַּ֧רְא אֱלֹהִ֛ים אֶת־הָא֖וֹר כִּי־ט֑וֹב וַיַּבְדֵּ֣ל אֱלֹהִ֔ים בֵּ֥ין הָא֖וֹר וּבֵ֥ין הַחֽשֶׁךְ: וַיִּקְרָ֨א אֱלֹהִ֤ים | לָאוֹר֙+ י֔וֹם וְלַח֖שֶׁךְ קָ֣רָא לָ֑יְלָה וַֽיְהִי־עֶ֥רֶב וַֽיְהִי־בֹ֖קֶר י֥וֹם אֶחָֽד: וַיֹּ֣אמֶר אֱלֹהִ֔ים יְהִ֥י רָקִ֖יעַ בְּת֣וֹךְ הַמָּ֑יִם וִיהִ֣י מַבְדִּ֔יל בֵּ֥ין מַ֖יִם לָמָֽיִם: וַיַּ֣עַשׂ אֱלֹהִים֘ אֶת־הָֽרָקִיעַ֒ וַיַּבְדֵּ֗ל בֵּ֤ין הַמַּ֨יִם֙ אֲשֶׁר֙ מִתַּ֣חַת לָֽרָקִ֔יעַ וּבֵ֣ין הַמַּ֔יִם אֲשֶׁ֖ר מֵעַ֣ל לָֽרָקִ֑יעַ וַֽיְהִי־כֵֽן: וַיִּקְרָ֧א אֱלֹהִ֛ים לָֽרָקִ֖יעַ שָׁמָ֑יִם וַֽיְהִי־עֶ֥רֶב וַֽיְהִי־בֹ֖קֶר י֥וֹם שֵׁנִֽי וַיֹּ֣אמֶר אֱלֹהִ֗ים יִקָּו֨וּ הַמַּ֜יִם מִתַּ֤חַת הַשָּׁמַ֨יִם֙ אֶל־מָק֣וֹם אֶחָ֔ד וְתֵֽרָאֶ֖ה הַיַּבָּשָׁ֑ה וַֽיְהִי־כֵֽן:&nbsp;</p><p>וַיִּקְרָ֨א אֱלֹהִ֤ים | לַיַּבָּשָׁה֙ אֶ֔רֶץ וּלְמִקְוֵ֥ה הַמַּ֖יִם קָרָ֣א יַמִּ֑ים וַיַּ֥רְא אֱלֹהִ֖ים כִּי־טֽוֹב: וַיֹּ֣אמֶר אֱלֹהִ֗ים תַּדְשֵׁ֤א הָאָ֨רֶץ֙ דֶּ֗שֶׁא עֵ֚שֶׂב מַזְרִ֣יעַ זֶ֔רַע עֵ֣ץ פְּרִ֞י עֹ֤שֶׂה פְּרִי֙ לְמִינ֔וֹ אֲשֶׁ֥ר זַרְעוֹ־ב֖וֹ עַל־הָאָ֑רֶץ וַֽיְהִי־כֵֽן: וַתּוֹצֵ֨א הָאָ֜רֶץ דֶּשֶׁא עֵ֣שֶׂב מַזְרִ֤יעַ זֶ֨רַע֙ לְמִינֵ֔הוּ וְעֵ֧ץ עֹֽשֶׂה־פְּרִ֛י אֲשֶׁ֥ר זַרְעוֹ־ב֖וֹ לְמִינֵ֑הוּ וַיַּ֥רְא אֱלֹהִ֖ים כִּי־טֽוֹב:
+      וַֽיְהִי־עֶ֥רֶב וַֽיְהִי־בֹ֖קֶר י֥וֹם שְׁלִישִֽׁי: וַיֹּ֣אמֶר אֱלֹהִ֗ים יְהִ֤י מְאֹרֹת֙ בִּרְקִ֣יעַ הַשָּׁמַ֔יִם לְהַבְדִּ֕יל בֵּ֥ין הַיּ֖וֹם וּבֵ֣ין הַלָּ֑יְלָה וְהָי֤וּ לְאֹתֹת֙ וּלְמ֣וֹעֲדִ֔ים וּלְיָמִ֖ים וְשָׁנִֽים: וְהָי֤וּ לִמְאוֹרֹת֙ בִּרְקִ֣יעַ הַשָּׁמַ֔יִם לְהָאִ֖יר עַל־הָאָ֑רֶץ וַֽיְהִי־כֵֽן: וַיַּ֣עַשׂ אֱלֹהִ֔ים אֶת־שְׁנֵ֥י הַמְּאֹרֹ֖ת הַגְּדֹלִ֑ים אֶת־הַמָּא֤וֹר הַגָּדֹל֙ לְמֶמְשֶׁ֣לֶת הַיּ֔וֹם וְאֶת־הַמָּא֤וֹר הַקָּטֹן֙ לְמֶמְשֶׁ֣לֶת הַלַּ֔יְלָה וְאֵ֖ת הַכּֽוֹכָבִֽים: וַיִּתֵּ֥ן אֹתָ֛ם אֱלֹהִ֖ים בִּרְקִ֣יעַ הַשָּׁמָ֑יִם לְהָאִ֖יר עַל־הָאָֽרֶץ: וְלִמְשֹׁל֙ בַּיּ֣וֹם וּבַלַּ֔יְלָה וּֽלֲהַבְדִּ֔יל בֵּ֥ין הָא֖וֹר וּבֵ֣ין הַח֑שֶׁךְ וַיַּ֥רְא אֱלֹהִ֖ים כִּי־טֽוֹב: וַֽיְהִי־עֶ֥רֶב וַֽיְהִי־בֹ֖קֶר י֥וֹם רְבִיעִֽי:&nbsp;</p><p>וַיֹּ֣אמֶר אֱלֹהִ֔ים יִשְׁרְצ֣וּ הַמַּ֔יִם שֶׁ֖רֶץ נֶ֣פֶשׁ חַיָּ֑ה וְעוֹף֙ יְעוֹפֵ֣ף עַל־הָאָ֔רֶץ עַל־פְּנֵ֖י רְקִ֥יעַ הַשָּׁמָֽיִם: וַיִּבְרָ֣א אֱלֹהִ֔ים אֶת־הַתַּנִּינִ֖ם הַגְּדֹלִ֑ים וְאֵ֣ת כָּל־נֶ֣פֶשׁ הַֽחַיָּ֣ה | הָֽרֹמֶ֡שֶׂת אֲשֶׁר֩ שָֽׁרְצ֨וּ הַמַּ֜יִם לְמִֽינֵהֶ֗ם וְאֵ֨ת כָּל־ע֤וֹף כָּנָף֙ לְמִינֵ֔הוּ וַיַּ֥רְא אֱלֹהִ֖ים כִּי־טֽוֹב: וַיְבָ֧רֶךְ אֹתָ֛ם אֱלֹהִ֖ים לֵאמֹ֑ר פְּר֣וּ וּרְב֗וּ וּמִלְא֤וּ אֶת־הַמַּ֨יִם֙ בַּיַּמִּ֔ים וְהָע֖וֹף יִ֥רֶב בָּאָֽרֶץ: וַֽיְהִי־עֶ֥רֶב וַֽיְהִי־בֹ֖קֶר י֥וֹם חֲמִישִֽׁי:
+      וַיֹּ֣אמֶר אֱלֹהִ֗ים תּוֹצֵ֨א הָאָ֜רֶץ נֶ֤פֶשׁ חַיָּה֙ לְמִינָ֔הּ בְּהֵמָ֥ה וָרֶ֛מֶשׂ וְחַֽיְתוֹ־אֶ֖רֶץ לְמִינָ֑הּ וַֽיְהִי־כֵֽן: וַיַּ֣עַשׂ אֱלֹהִים֩ אֶת־חַיַּ֨ת הָאָ֜רֶץ לְמִינָ֗הּ וְאֶת־הַבְּהֵמָה֙ לְמִינָ֔הּ וְאֵ֛ת כָּל־רֶ֥מֶשׂ הָֽאֲדָמָ֖ה לְמִינֵ֑הוּ וַיַּ֥רְא אֱלֹהִ֖ים כִּי־טֽוֹב: וַיֹּ֣אמֶר אֱלֹהִ֔ים נַֽעֲשֶׂ֥ה אָדָ֛ם בְּצַלְמֵ֖נוּ כִּדְמוּתֵ֑נוּ וְיִרְדּוּ֩ בִדְגַ֨ת הַיָּ֜ם וּבְע֣וֹף הַשָּׁמַ֗יִם וּבַבְּהֵמָה֙ וּבְכָל־הָאָ֔רֶץ וּבְכָל־הָרֶ֖מֶשׂ הָֽרֹמֵ֥שׂ עַל־הָאָֽרֶץ: וַיִּבְרָ֨א אֱלֹהִ֤ים | אֶת־הָֽאָדָם֙ בְּצַלְמ֔וֹ בְּצֶ֥לֶם אֱלֹהִ֖ים בָּרָ֣א אֹת֑וֹ זָכָ֥ר וּנְקֵבָ֖ה בָּרָ֥א אֹתָֽם: וַיְבָ֣רֶךְ אֹתָם֘ אֱלֹהִים֒ וַיֹּ֨אמֶר לָהֶ֜ם אֱלֹהִ֗ים פְּר֥וּ וּרְב֛וּ וּמִלְא֥וּ אֶת־הָאָ֖רֶץ וְכִבְשֻׁ֑הָ וּרְד֞וּ בִּדְגַ֤ת הַיָּם֙ וּבְע֣וֹף הַשָּׁמַ֔יִם וּבְכָל־חַיָּ֖ה הָֽרֹמֶ֥שֶׂת עַל־הָאָֽרֶץ: וַיֹּ֣אמֶר אֱלֹהִ֗ים הִנֵּה֩ נָתַ֨תִּי לָכֶ֜ם אֶת־כָּל־אֵ֣שֶׂב | זֹרֵ֣עַ זֶ֗רַע אֲשֶׁר֙ אַל־פְּנֵ֣י כָל־הָאָ֔רֶץ וְאֶת־כָּל־הָאֵ֛ץ אֲשֶׁר־בּ֥וֹ פְרִי־אֵ֖ץ זֹרֵ֣עַ זָ֑רַע לָכֶ֥ם יִֽהְיֶ֖ה לְאָכְלָֽה: וּלְכָל־חַיַּ֣ת הָ֠אָ֠רֶץ וּלְכָל־ע֨וֹף הַשָּׁמַ֜יִם וּלְכֹ֣ל | רוֹמֵ֣שׂ עַל־הָאָ֗רֶץ אֲשֶׁר־בּוֹ֙ נֶ֣פֶשׁ חַיָּ֔ה אֶת־כָּל־יֶ֥רֶק עֵ֖שֶׂב לְאָכְלָ֑ה וַֽיְהִי־כֵֽן: וַיַּ֤רְא אֱלֹהִים֙ אֶת־כָּל־אֲשֶׁ֣ר עָשָׂ֔ה וְהִנֵּה־ט֖וֹב מְאֹ֑ד וַֽיְהִי־עֶ֥רֶב וַֽיְהִי־בֹ֖קֶר י֥וֹם הַשִּׁשִּֽׁי:&nbsp;</p><p>וַיְכֻלּ֛וּ הַשָּׁמַ֥יִם וְהָאָ֖רֶץ וְכָל־צְבָאָֽם: וַיְכַ֤ל אֱלֹהִים֙ בַּיּ֣וֹם הַשְּׁבִיעִ֔י מְלַאכְתּ֖וֹ אֲשֶׁ֣ר עָשָׂ֑ה וַיִּשְׁבֹּת֙ בַּיּ֣וֹם הַשְּׁבִיעִ֔י מִכָּל־מְלַאכְתּ֖וֹ אֲשֶׁ֥ר עָשָֽׂה: וַיְבָ֤רֶךְ אֱלֹהִים֙ אֶת־י֣וֹם הַשְּׁבִיעִ֔י וַיְקַדֵּ֖שׁ אֹת֑וֹ כִּ֣י ב֤וֹ שָׁבַת֙ מִכָּל־מְלַאכְתּ֔וֹ אֲשֶׁר־בָּרָ֥א אֱלֹהִ֖ים לַֽעֲשֽׂוֹת:&nbsp;</p><p>אֵ֣לֶּה תֽוֹלְד֧וֹת הַשָּׁמַ֛יִם וְהָאָ֖רֶץ בְּהִ֣בָּֽרְאָ֑ם בְּי֗וֹם עֲשׂ֛וֹת יְהֹוָ֥ה אֱלֹהִ֖ים אֶ֥רֶץ וְשָׁמָֽיִם: וְכֹ֣ל | שִׂ֣יחַ הַשָּׂדֶ֗ה טֶ֚רֶם יִֽהְיֶ֣ה בָאָ֔רֶץ וְכָל־עֵ֥שֶׂב הַשָּׂדֶ֖ה טֶ֣רֶם יִצְמָ֑ח כִּי֩ לֹ֨א הִמְטִ֜יר יְהֹוָ֤ה אֱלֹהִים֙ עַל־הָאָ֔רֶץ וְאָדָ֣ם אַ֔יִן לַֽעֲבֹ֖ד אֶת־הָֽאֲדָמָֽה: וְאֵ֖ד יַֽעֲלֶ֣ה מִן־הָאָ֑רֶץ וְהִשְׁקָ֖ה אֶת־כָּל־פְּנֵ֥י הָֽאֲדָמָֽה: וַיִּ֩יצֶר֩ יְהֹוָ֨ה אֱלֹהִ֜ים אֶת־הָֽאָדָ֗ם עָפָר֙ מִן־הָ֣אֲדָמָ֔ה וַיִּפַּ֥ח בְּאַפָּ֖יו נִשְׁמַ֣ת חַיִּ֑ים וַיְהִ֥י הָֽאָדָ֖ם לְנֶ֥פֶשׁ חַיָּֽה: וַיִּטַּ֞ע יְהֹוָ֧ה אֱלֹהִ֛ים גַּן־בְּעֵ֖דֶן מִקֶּ֑דֶם וַיָּ֣שֶׂם שָׁ֔ם אֶת־הָֽאָדָ֖ם אֲשֶׁ֥ר יָצָֽר:
+      וַיַּצְמַ֞ח יְהֹוָ֤ה אֱלֹהִים֙ מִן־הָ֣אֲדָמָ֔ה כָּל־עֵ֛ץ נֶחְמָ֥ד לְמַרְאֶ֖ה וְט֣וֹב לְמַֽאֲכָ֑ל וְעֵ֤ץ הַֽחַיִּים֙ בְּת֣וֹךְ הַגָּ֔ן וְעֵ֕ץ הַדַּ֖עַת ט֥וֹב וָרָֽע: וְנָהָר֙ יֹצֵ֣א מֵעֵ֔דֶן לְהַשְׁק֖וֹת אֶת־הַגָּ֑ן וּמִשָּׁם֙ יִפָּרֵ֔ד וְהָיָ֖ה לְאַרְבָּעָ֥ה רָאשִֽׁים: שֵׁ֥ם הָֽאֶחָ֖ד פִּישׁ֑וֹן ה֣וּא הַסֹּבֵ֗ב אֵ֚ת כָּל־אֶ֣רֶץ הַֽחֲוִילָ֔ה אֲשֶׁר־שָׁ֖ם הַזָּהָֽב: וּֽזֲהַ֛ב הָאָ֥רֶץ הַהִ֖וא ט֑וֹב שָׁ֥ם הַבְּדֹ֖לַח וְאֶ֥בֶן הַשֹּֽׁהַם:&nbsp;</p><p>וְשֵֽׁם־הַנָּהָ֥ר הַשֵּׁנִ֖י גִּיח֑וֹן ה֣וּא הַסּוֹבֵ֔ב אֵ֖ת כָּל־אֶ֥רֶץ כּֽוּשׁ: וְשֵֽׁם־הַנָּהָ֤ר הַשְּׁלִישִׁי֙ חִדֶּ֔קֶל ה֥וּא הַֽהֹלֵ֖ךְ קִדְמַ֣ת אַשּׁ֑וּר וְהַנָּהָ֥ר הָֽרְבִיעִ֖י ה֥וּא פְרָֽת: וַיִּקַּ֛ח יְהֹוָ֥ה אֱלֹהִ֖ים אֶת־הָֽאָדָ֑ם וַיַּנִּחֵ֣הוּ בְגַן־עֵ֔דֶן לְעָבְדָ֖הּ וּלְשָׁמְרָֽהּ: וַיְצַו֙ יְהֹוָ֣ה אֱלֹהִ֔ים עַל־הָֽאָדָ֖ם לֵאמֹ֑ר מִכֹּ֥ל עֵֽץ־הַגָּ֖ן אָכֹ֥ל תֹּאכֵֽל: וּמֵעֵ֗ץ הַדַּ֨עַת֙ ט֣וֹב וָרָ֔ע לֹ֥א תֹאכַ֖ל מִמֶּ֑נּוּ כִּ֗י בְּי֛וֹם אֲכָלְךָ֥ מִמֶּ֖נּוּ מ֥וֹת תָּמֽוּת: וַיֹּ֨אמֶר֙ יְהֹוָ֣ה אֱלֹהִ֔ים לֹא־ט֛וֹב הֱי֥וֹת הָֽאָדָ֖ם לְבַדּ֑וֹ אֶֽעֱשֶׂה־לּ֥וֹ עֵ֖זֶר כְּנֶגְדּֽוֹ: וַיִּ֩צֶר֩ יְהֹוָ֨ה אֱלֹהִ֜ים מִן־הָֽאֲדָמָ֗ה כָּל־חַיַּ֤ת הַשָּׂדֶה֙ וְאֵת֙ כָּל־ע֣וֹף הַשָּׁמַ֔יִם וַיָּבֵא֙ אֶל־הָ֣אָדָ֔ם לִרְא֖וֹת מַה־יִּקְרָא־ל֑וֹ וְכֹל֩ אֲשֶׁ֨ר יִקְרָא־ל֧וֹ הָֽאָדָ֛ם נֶ֥פֶשׁ חַיָּ֖ה ה֥וּא שְׁמֽוֹ: וַיִּקְרָ֨א הָֽאָדָ֜ם שֵׁמ֗וֹת לְכָל־הַבְּהֵמָה֙ וּלְע֣וֹף הַשָּׁמַ֔יִם וּלְכֹ֖ל חַיַּ֣ת הַשָּׂדֶ֑ה וּלְאָדָ֕ם לֹֽא־מָצָ֥א עֵ֖זֶר כְּנֶגְדּֽוֹ:
+      וַיַּפֵּל֩ יְהֹוָ֨ה אֱלֹהִ֧ים | תַּרְדֵּמָ֛ה עַל־הָֽאָדָ֖ם וַיִּישָׁ֑ן וַיִּקַּ֗ח אַחַת֙ מִצַּלְעֹתָ֔יו וַיִּסְגֹּ֥ר בָּשָׂ֖ר תַּחְתֶּֽנָּה: וַיִּ֩בֶן֩ יְהֹוָ֨ה אֱלֹהִ֧ים | אֶת־הַצֵּלָ֛ע אֲשֶׁר־לָקַ֥ח מִן־הָֽאָדָ֖ם לְאִשָּׁ֑ה וַיְבִאֶ֖הָ אֶל־הָֽאָדָֽם: וַיֹּ֘אמֶר֘ הָֽאָדָם֒ זֹ֣את הַפַּ֗עַם עֶ֚צֶם מֵֽעֲצָמַ֔י וּבָשָׂ֖ר מִבְּשָׂרִ֑י לְזֹאת֙ יִקָּרֵ֣א אִשָּׁ֔ה כִּ֥י מֵאִ֖ישׁ לֻֽקֳחָה־זֹּֽאת: עַל־כֵּן֙ יַֽעֲזָב־אִ֔ישׁ אֶת־אָבִ֖יו וְאֶת־אִמּ֑וֹ וְדָבַ֣ק בְּאִשְׁתּ֔וֹ וְהָי֖וּ לְבָשָׂ֥ר אֶחָֽד:
+      וַיִּֽהְי֤וּ שְׁנֵיהֶם֙ עֲרוּמִּ֔ים הָֽאָדָ֖ם וְאִשְׁתּ֑וֹ וְלֹ֖א יִתְבּשָֽׁשׁוּ: וְהַנָּחָשׁ֙ הָיָ֣ה עָר֔וּם מִכֹּל֙ חַיַּ֣ת הַשָּׂדֶ֔ה אֲשֶׁ֥ר עָשָׂ֖ה יְהֹוָ֣ה אֱלֹהִ֑ים וַיֹּ֨אמֶר֙ אֶל־הָ֣אִשָּׁ֔ה אַ֚ף כִּֽי־אָמַ֣ר אֱלֹהִ֔ים לֹ֣א תֹֽאכְל֔וּ מִכֹּ֖ל עֵ֥ץ הַגָּֽן: וַתֹּ֥אמֶר הָֽאִשָּׁ֖ה אֶל־הַנָּחָ֑שׁ מִפְּרִ֥י עֵֽץ־הַגָּ֖ן נֹאכֵֽל: וּמִפְּרִ֣י הָעֵץ֘ אֲשֶׁ֣ר בְּתֽוֹךְ־הַגָּן֒ אָמַ֣ר אֱלֹהִ֗ים לֹ֤א תֹֽאכְלוּ֙ מִמֶּ֔נּוּ וְלֹ֥א תִגְּע֖וּ בּ֑וֹ פֶּן־תְּמֻתֽוּן:&nbsp;</p><p>וַיֹּ֥אמֶר הַנָּחָ֖שׁ אֶל־הָֽאִשָּׁ֑ה לֹא־מ֖וֹת תְּמֻתֽוּן: כִּ֚י יֹדֵ֣עַ אֱלֹהִ֔ים כִּ֗י בְּיוֹם֙ אֲכָלְכֶ֣ם מִמֶּ֔נּוּ וְנִפְקְח֖וּ עֵֽינֵיכֶ֑ם וִֽהְיִיתֶם֙ כֵּֽאלֹהִ֔ים יֹֽדְעֵ֖י ט֥וֹב וָרָֽע:
+      וַתֵּ֣רֶא הָֽאִשָּׁ֡ה כִּ֣י טוֹב֩ הָעֵ֨ץ לְמַֽאֲכָ֜ל וְכִ֧י תַֽאֲוָה־ה֣וּא לָֽעֵינַ֗יִם וְנֶחְמָ֤ד הָעֵץ֙ לְהַשְׂכִּ֔יל וַתִּקַּ֥ח מִפִּרְי֖וֹ וַתֹּאכַ֑ל וַתִּתֵּ֧ן גַּם־לְאִישָׁ֛הּ עִמָּ֖הּ וַיֹּאכַֽל: וַתִּפָּקַ֨חְנָה֙ עֵינֵ֣י שְׁנֵיהֶ֔ם וַיֵּ֣דְע֔וּ כִּ֥י עֵֽירֻמִּ֖ם הֵ֑ם וַיִּתְפְּרוּ֙ עֲלֵ֣ה תְאֵנָ֔ה וַיַּֽעֲשׂ֥וּ לָהֶ֖ם חֲגֹרֹֽת: וַיִּשְׁמְע֞וּ אֶת־ק֨וֹל יְהֹוָ֧ה אֱלֹהִ֛ים מִתְהַלֵּ֥ךְ בַּגָּ֖ן לְר֣וּחַ הַיּ֑וֹם וַיִּתְחַבֵּ֨א הָֽאָדָ֜ם וְאִשְׁתּ֗וֹ מִפְּנֵי֙ יְהֹוָ֣ה אֱלֹהִ֔ים בְּת֖וֹךְ עֵ֥ץ הַגָּֽן:
+      וַיִּקְרָ֛א יְהֹוָ֥ה אֱלֹהִ֖ים אֶל־הָֽאָדָ֑ם וַיֹּ֥אמֶר ל֖וֹ אַיֶּֽכָּה: וַיֹּ֕אמֶר אֶת־קֹֽלְךָ֥ שָׁמַ֖עְתִּי בַּגָּ֑ן וָֽאִירָ֛א כִּֽי־עֵירֹ֥ם אָנֹ֖כִי וָאֵֽחָבֵֽא: וַיֹּ֕אמֶר מִ֚י הִגִּ֣יד לְךָ֔ כִּ֥י עֵירֹ֖ם אָ֑תָּה הֲמִן־הָעֵ֗ץ אֲשֶׁ֧ר צִוִּיתִ֛יךָ לְבִלְתִּ֥י אֲכָל־מִמֶּ֖נּוּ אָכָֽלְתָּ: וַיֹּ֖אמֶר הָֽאָדָ֑ם הָֽאִשָּׁה֙ אֲשֶׁ֣ר נָתַ֣תָּה עִמָּדִ֔י הִ֛וא נָֽתְנָה־לִּ֥י מִן־הָעֵ֖ץ וָֽאֹכֵֽל: וַיֹּ֨אמֶר יְהֹוָ֧ה אֱלֹהִ֛ים לָֽאִשָּׁ֖ה מַה־זֹּ֣את עָשִׂ֑ית וַתֹּ֨אמֶר֙ הָֽאִשָּׁ֔ה הַנָּחָ֥שׁ הִשִּׁיאַ֖נִי וָֽאֹכֵֽל: וַיֹּ֩אמֶר֩ יְהֹוָ֨ה אֱלֹהִ֥ים | אֶל־הַנָּחָשׁ֘ כִּ֣י עָשִׂ֣יתָ זֹּאת֒ אָר֤וּר אַתָּה֙ מִכָּל־הַבְּהֵמָ֔ה וּמִכֹּ֖ל חַיַּ֣ת הַשָּׂדֶ֑ה עַל־גְּחֹֽנְךָ֣ תֵלֵ֔ךְ וְעָפָ֥ר תֹּאכַ֖ל כָּל־יְמֵ֥י חַיֶּֽיךָ:
+      וְאֵיבָ֣ה | אָשִׁ֗ית בֵּֽינְךָ֙ וּבֵ֣ין הָֽאִשָּׁ֔ה וּבֵ֥ין זַֽרְעֲךָ֖ וּבֵ֣ין זַרְעָ֑הּ ה֚וּא יְשֽׁוּפְךָ֣ רֹ֔אשׁ וְאַתָּ֖ה תְּשׁוּפֶ֥נּוּ עָקֵֽב: אֶל־הָֽאִשָּׁ֣ה אָמַ֗ר הַרְבָּ֤ה אַרְבֶּה֙ עִצְּבוֹנֵ֣ךְ וְהֵֽרֹנֵ֔ךְ בְּעֶ֖צֶב תֵּֽלְדִ֣י בָנִ֑ים וְאֶל־אִישֵׁךְ֙ תְּשׁ֣וּקָתֵ֔ךְ וְה֖וּא יִמְשָׁל־בָּֽךְ: וּלְאָדָ֣ם אָמַ֗ר כִּ֣י שָׁמַ֘עְתָּ֘ לְק֣וֹל אִשְׁתֶּ֒ךָ֒ וַתֹּ֨אכַל֙ מִן־הָעֵ֔ץ אֲשֶׁ֤ר צִוִּיתִ֨יךָ֙ לֵאמֹ֔ר לֹ֥א תֹאכַ֖ל מִמֶּ֑נּוּ אֲרוּרָ֤ה הָֽאֲדָמָה֙ בַּֽעֲבוּרֶ֔ךָ בְּעִצָּבוֹן֙ תֹּֽאכֲלֶ֔נָּה כֹּ֖ל יְמֵ֥י חַיֶּֽיךָ:
+      וְק֥וֹץ וְדַרְדַּ֖ר תַּצְמִ֣יחַ לָ֑ךְ וְאָֽכַלְתָּ֖ אֶת־עֵ֥שֶׂב הַשָּׂדֶֽה: בְּזֵעַ֤ת אַפֶּ֨יךָ֙ תֹּ֣אכַל לֶ֔חֶם עַ֤ד שֽׁוּבְךָ֙ אֶל־הָ֣אֲדָמָ֔ה כִּ֥י מִמֶּ֖נָּה לֻקָּ֑חְתָּ כִּֽי־עָפָ֣ר אַ֔תָּה וְאֶל־עָפָ֖ר תָּשֽׁוּב:&nbsp;</p><p>וַיִּקְרָ֧א הָֽאָדָ֛ם שֵׁ֥ם אִשְׁתּ֖וֹ חַוָּ֑ה כִּ֛י הִ֥וא הָֽיְתָ֖ה אֵ֥ם כָּל־חָֽי: וַיַּ֩עַשׂ֩ יְהֹוָ֨ה אֱלֹהִ֜ים לְאָדָ֧ם וּלְאִשְׁתּ֛וֹ כָּתְנ֥וֹת ע֖וֹר וַיַּלְבִּשֵֽׁם: וַיֹּ֣אמֶר | יְהֹוָ֣ה אֱלֹהִ֗ים הֵ֤ן הָֽאָדָם֙ הָיָה֙ כְּאַחַ֣ד מִמֶּ֔נּוּ לָדַ֖עַת ט֣וֹב וָרָ֑ע וְעַתָּ֣ה | פֶּן־יִשְׁלַ֣ח יָד֗וֹ וְלָקַח֙ גַּ֚ם מֵעֵ֣ץ הַֽחַיִּ֔ים וְאָכַ֖ל וָחַ֥י לְעֹלָֽם:
+      וַיְשַׁלְּחֵ֛הוּ יְהֹוָ֥ה אֱלֹהִ֖ים מִגַּן־עֵ֑דֶן לַֽעֲבֹד֙ אֶת־הָ֣אֲדָמָ֔ה אֲשֶׁ֥ר לֻקַּ֖ח מִשָּֽׁם: וַיְגָ֖רֶשׁ אֶת־הָֽאָדָ֑ם וַיַּשְׁכֵּן֩ מִקֶּ֨דֶם לְגַן־עֵ֜דֶן אֶת־הַכְּרֻבִ֗ים וְאֵ֨ת לַ֤הַט הַחֶ֨רֶב֙ הַמִּתְהַפֶּ֔כֶת לִשְׁמֹ֕ר אֶת־דֶּ֖רֶךְ עֵ֥ץ הַֽחַיִּֽים: וְהָ֣אָדָ֔ם יָדַ֖ע אֶת־חַוָּ֣ה אִשְׁתּ֑וֹ וַתַּ֨הַר֙ וַתֵּ֣לֶד אֶת־קַ֔יִן וַתֹּ֕אמֶר קָנִ֥יתִי אִ֖ישׁ אֶת־יְהֹוָֽה: וַתֹּ֣סֶף לָלֶ֔דֶת אֶת־אָחִ֖יו אֶת־הָ֑בֶל וַֽיְהִי־הֶ֨בֶל֙ רֹ֣עֵה צֹ֔אן וְקַ֕יִן הָיָ֖ה עֹבֵ֥ד אֲדָמָֽה: וַיְהִ֖י מִקֵּ֣ץ יָמִ֑ים וַיָּבֵ֨א קַ֜יִן מִפְּרִ֧י הָֽאֲדָמָ֛ה מִנְחָ֖ה לַֽיהֹוָֽה: וְהֶ֨בֶל הֵבִ֥יא גַם־ה֛וּא מִבְּכֹר֥וֹת צֹאנ֖וֹ וּמֵֽחֶלְבֵהֶ֑ן וַיִּ֣שַׁע יְהֹוָ֔ה אֶל־הֶ֖בֶל וְאֶל־מִנְחָתֽוֹ:
+      וְאֶל־קַ֥יִן וְאֶל־מִנְחָת֖וֹ לֹ֣א שָׁעָ֑ה וַיִּ֤חַר לְקַ֨יִן֙ מְאֹ֔ד וַיִּפְּל֖וּ פָּנָֽיו:&nbsp;</p><p>וַיֹּ֥אמֶר יְהֹוָ֖ה אֶל־קָ֑יִן לָ֚מָּה חָ֣רָה לָ֔ךְ וְלָ֖מָּה נָֽפְל֥וּ פָנֶֽיךָ: הֲל֤וֹא אִם־תֵּיטִיב֙ שְׂאֵ֔ת וְאִם֙ לֹ֣א תֵיטִ֔יב לַפֶּ֖תַח חַטָּ֣את רֹבֵ֑ץ וְאֵלֶ֨יךָ֙ תְּשׁ֣וּקָת֔וֹ וְאַתָּ֖ה תִּמְשָׁל־בּֽוֹ: וַיֹּ֥אמֶר קַ֖יִן אֶל־הֶ֣בֶל אָחִ֑יו וַֽיְהִי֙ בִּֽהְיוֹתָ֣ם בַּשָּׂדֶ֔ה וַיָּ֥קָם קַ֛יִן אֶל־הֶ֥בֶל אָחִ֖יו וַיַּֽהַרְגֵֽהוּ: וַיֹּ֤אמֶר יְהֹוָה֙ אֶל־קַ֔יִן אֵ֖י הֶ֣בֶל אָחִ֑יךָ וַיֹּ֨אמֶר֙ לֹ֣א יָדַ֔עְתִּי הֲשֹׁמֵ֥ר אָחִ֖י אָנֹֽכִי: וַיֹּ֖אמֶר מֶ֣ה עָשִׂ֑יתָ ק֚וֹל דְּמֵ֣י אָחִ֔יךָ צֹֽעֲקִ֥ים אֵלַ֖י מִן־הָֽאֲדָמָֽה:
+      אֲנִ֥י יְהֹוָ֖ה ה֣וּא שְׁמִ֑י וּכְבוֹדִי֙ לְאַחֵ֣ר לֹֽא־אֶתֵּ֔ן וּתְהִלָּתִ֖י לַפְּסִילִֽים: הָרִֽאשֹׁנ֖וֹת הִנֵּה־בָ֑אוּ וַֽחֲדָשׁוֹת֙ אֲנִ֣י מַגִּ֔יד בְּטֶ֥רֶם תִּצְמַ֖חְנָה אַשְׁמִ֥יע אֶתְכֶֽם: שִׁ֚ירוּ לַֽיהֹוָה֙ שִׁ֣יר חָדָ֔שׁ תְּהִלָּת֖וֹ מִקְצֵ֣ה הָאָ֑רֶץ יֽוֹרְדֵ֚י הַיָּם֙ וּמְלֹא֔וֹ אִיִּ֖ים וְיֹֽשְׁבֵיהֶֽם: יִשְׂא֚וּ מִדְבָּר֙ וְעָרָ֔יו חֲצֵרִ֖ים תֵּשֵׁ֣ב קֵדָ֑ר יָרֹ֙נּוּ֙ י֣שְׁבֵי סֶ֔לַע מֵרֹ֥אשׁ הָרִ֖ים יִצְוָֽחוּ: יָשִׂ֥ימוּ לַֽיהֹוָ֖ה כָּב֑וֹד וּתְהִלָּת֖וֹ בָּֽאִיִּ֥ים יַגִּֽידוּ: יְהֹוָה֙ כַּגִּבּ֣וֹר יֵצֵ֔א כְּאִ֥ישׁ מִלְחָמ֖וֹת יָעִ֣יר קִנְאָ֑ה יָרִ֙יעַ֙ אַף־יַצְרִ֔יחַ עַל־אֹֽיְבָ֖יו יִתְגַּבָּֽר:
+      הֶֽחֱשֵׁ֙יתִי֙ מֵֽעוֹלָ֔ם אַֽחֲרִ֖ישׁ אֶתְאַפָּ֑ק כַּיּֽוֹלֵדָ֣ה אֶפְעֶ֔ה אֶשֹּׁ֥ם וְאֶשְׁאַ֖ף יָֽחַד: אַֽחֲרִ֚יב הָרִים֙ וּגְבָע֔וֹת וְכָל־עֶשְׂבָּ֖ם אוֹבִ֑ישׁ וְשַׂמְתִּ֚י נְהָרוֹת֙ לָֽאִיִּ֔ים וַֽאֲגַמִּ֖ים אוֹבִֽישׁ: וְהֽוֹלַכְתִּ֣י עִוְרִ֗ים בְּדֶ֙רֶךְ֙ לֹ֣א יָֽדָ֔עוּ בִּנְתִיב֥וֹת לֹֽא־יָֽדְע֖וּ אַדְרִיכֵ֑ם אָשִׂים֩ מַחְשָׁ֨ךְ לִפְנֵיהֶ֜ם לָא֗וֹר וּמַֽעֲקַשִּׁים֙ לְמִישׁ֔וֹר אֵלֶּה הַדְּבָרִ֔ים עֲשִׂיתִ֖ם וְלֹ֥א עֲזַבְתִּֽים: נָסֹ֚גוּ אָחוֹר֙ יֵבֹ֣שׁוּ בֹ֔שֶׁת הַבֹּֽטְחִ֖ים בַּפָּ֑סֶל הָאֹֽמְרִ֥ים לְמַסֵּכָ֖ה אַתֶּ֥ם אֱלֹהֵֽינוּ: הַחֵֽרְשִׁ֖ים שְׁמָ֑עוּ וְהַֽעִוְרִ֖ים הַבִּ֥יטוּ לִרְאֽוֹת: מִ֚י עִוֵּר֙ כִּ֣י אִם־עַבְדִּ֔י וְחֵרֵ֖שׁ כְּמַלְאָכִ֣י אֶשְׁלָ֑ח מִ֚י עִוֵּר֙ כִּמְשֻׁלָּ֔ם וְעִוֵּ֖ר כְּעֶ֥בֶד יְהֹוָֽה: רָא֥וֹת  פָּק֥וֹחַ אָזְנַ֖יִם וְלֹ֥א יִשְׁמָֽע: יְהֹוָ֥ה חָפֵ֖ץ לְמַ֣עַן צִדְק֑וֹ יַגְדִּ֥יל תּוֹרָ֖ה 12
+      </p></div>
+</div>
+<script src="./fontpre.js" nonce="randomValue"></script>
+
+
+</body>
+</html>
