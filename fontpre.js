@@ -50,28 +50,6 @@ document.addEventListener('wheel', function(event) {
 
 
 
-// document.getElementById('removeNikkudBtn').addEventListener('click',  function () {
-//   const previewTextElement = document.getElementById('previewText');
-//   const nikkudPattern = /[\u05B0-\u05B1\u05B2\u05B3\u05B4\u05B5\u05B6\u05B7\u05B8\u05B9\u05BA\u05BB\u05BC\u05BD\u05BF\u05C1\u05C2\u05C3\u05C4\u05C5\u05C7\u0591\u0592\u0593\u0594\u0595\u0596\u0597\u0598\u0599\u059A\u059B\u059C\u059D\u059E\u059F\u05A0\u05A1\u05A2\u05A3\u05A4\u05A5\u05A6\u05A7\u05A8\u05A9\u05AA\u05AB\u05AC\u05AD\u05AE\u05AF]/g;
-  
-//   if (previewTextElement) {
-//     const previewText = previewTextElement.textContent || '';
-//     const convertedText = previewText.replace(nikkudPattern, '');
-//     previewTextElement.textContent = convertedText; // Update text content
-//   }
-// });
-
-// document.getElementById('removeTaamBtn').addEventListener('click', function () {
-//   const previewTextElement = document.getElementById('previewText');
-//   const taamPattern = /[\u05BC-\u05BD\u05BF\u05C1\u05C2\u05C3\u05C4\u05C5\u05C7\u0591\u0592\u0593\u0594\u0595\u0596\u0597\u0598\u0599\u059A\u059B\u059C\u059D\u059E\u059F\u05A0\u05A1\u05A2\u05A3\u05A4\u05A5\u05A6\u05A7\u05A8\u05A9\u05AA\u05AB\u05AC\u05AD\u05AE\u05AF]/g;
-  
-//   if (previewTextElement) {
-//     const previewText = previewTextElement.textContent || '';
-//     const convertedText = previewText.replace(taamPattern, '');
-//     previewTextElement.textContent = convertedText; // Update text content
-//   }
-// });
-
 document.getElementById('removeNikkudBtn').addEventListener('click', removeNikkud);
 function removeNikkud() {
   const previewTextElement = document.getElementById('previewText');
@@ -92,6 +70,7 @@ document.getElementById('removeTaamBtn').addEventListener('click', removeTaam);
 function removeTaam() {
   const previewTextElement = document.getElementById('previewText');
   const taamPattern = /[\u05BD-\u05BF\u05C1\u05C2\u05C3\u05C4\u05C5\u05C7\u0591\u0592\u0593\u0594\u0595\u0596\u0597\u0598\u0599\u059A\u059B\u059C\u059D\u059E\u059F\u05A0\u05A1\u05A2\u05A3\u05A4\u05A5\u05A6\u05A7\u05A8\u05A9\u05AA\u05AB\u05AC\u05AD\u05AE\u05AF]/g; // Consolidated taam range
+
   updateURLParams("t");
 
   if (previewTextElement) {
@@ -171,6 +150,8 @@ document.getElementById('fileInputPopup').addEventListener('change', (event) => 
     document.getElementById('previewText').style.textAlignLast = alignmentLast;
 
   }
+
+  
   
   
  const previewText = document.getElementById('previewText');
@@ -193,6 +174,8 @@ document.getElementById('fileInputPopup').addEventListener('change', (event) => 
    localStorage.setItem('fontSize', fontSize);
  });
 
+
+ 
  // Update font size based on slider input
  fontWeightSlider.addEventListener('input', function () {
   const fontWeight = this.value;
@@ -312,7 +295,15 @@ function updateOpticalSize(event) {
   document.getElementById('fontWidthSlider').addEventListener('input', updateFontWidth);
   document.getElementById('opticalSizeSlider').addEventListener('input', updateOpticalSize); // New Optical Size Slider
 
-  
+  // Word Spacing Slider
+const wordSpacingSlider = document.getElementById('wordSpacingSlider');
+const wordSpacingValue = document.getElementById('wordSpacingValue');
+
+wordSpacingSlider.addEventListener('input', function () {
+  const spacing = this.value;
+  previewText.style.wordSpacing = `${spacing}em`;
+  wordSpacingValue.textContent = spacing;
+});
   // Attach event listeners for text alignment buttons
   document.getElementById('alignLeftButton').addEventListener('click', () => changeTextAlignment('left', 'left'));
   document.getElementById('alignCenterButton').addEventListener('click', () => changeTextAlignment('center', 'center'));
@@ -626,18 +617,7 @@ fileInput.addEventListener('change', (event) => {
 });
 
 
-  // labelFileUpload.addEventListener('drop', (e) => {
-  //   e.preventDefault();
-  //   labelFileUpload.classList.remove('drag-active');
-  //   inputFile.files = e.dataTransfer.files;
-  //   console.log(inputFile.files); // Optional: Log the uploaded files
-  //   uploadPopup.classList.add('hidden');
-  // });
-
-  // Handle file selection via the side input
-  // sideUploadButton.addEventListener('change', (e) => {
-  //   console.log(e.target.files); // Optional: Log the uploaded files
-  // });
+  
 
 
   
@@ -660,4 +640,172 @@ fileInput.addEventListener('change', (event) => {
   });
 })();
 
-    
+
+
+
+
+// Check for URL parameter variable=false and remove elements with class="varop"
+function removeVarOpIfParamFalse() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("variable") === "false") {
+    const varopElements = document.querySelectorAll('.varop');
+    varopElements.forEach(el => el.remove());
+  }
+}
+
+// Run immediately on script load
+removeVarOpIfParamFalse();
+
+    function applyURLParams() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const previewText = document.getElementById('previewText');
+
+  // Utility to update slider and display without saving to localStorage
+  function updateUI(idSlider, idValue, val) {
+    const slider = document.getElementById(idSlider);
+    const valueDisplay = document.getElementById(idValue);
+    if (slider) slider.value = val;
+    if (valueDisplay) valueDisplay.textContent = val;
+  }
+
+  if (urlParams.has('font-size')) {
+    const fontSize = parseFloat(urlParams.get('font-size'));
+    previewText.style.fontSize = fontSize + 'px';
+    updateUI('fontSizeSlider', 'fontSizeValue', fontSize);
+  }
+
+  if (urlParams.has('line-height')) {
+    const lineHeight = urlParams.get('line-height');
+    previewText.style.lineHeight = lineHeight;
+    const valueDisplay = document.getElementById('lineSpacingValue');
+    if (valueDisplay) valueDisplay.textContent = lineHeight;
+  }
+
+  if (urlParams.has('word-spacing')) {
+    const wordSpacing = urlParams.get('word-spacing');
+    previewText.style.wordSpacing = wordSpacing + 'px';
+    const valueDisplay = document.getElementById('wordSpacingValue');
+    if (valueDisplay) valueDisplay.textContent = wordSpacing;
+  }
+
+  if (urlParams.has('font-weight')) {
+    const fontWeight = urlParams.get('font-weight');
+    previewText.style.fontWeight = fontWeight;
+    updateUI('fontWeightSlider', 'fontWeightValue', fontWeight);
+    previewText.style.fontVariationSettings = `"wght" ${fontWeight}`;
+  }
+
+  if (urlParams.has('font-width')) {
+    const fontWidth = urlParams.get('font-width');
+    let settings = previewText.style.fontVariationSettings || '';
+    settings = updateVariationSetting(settings, 'wdth', fontWidth);
+    previewText.style.fontVariationSettings = settings;
+  }
+
+  if (urlParams.has('op-size')) {
+    const opsz = urlParams.get('op-size');
+    let settings = previewText.style.fontVariationSettings || '';
+    settings = updateVariationSetting(settings, 'opsz', opsz);
+    previewText.style.fontVariationSettings = settings;
+  }
+}
+
+// Utility to update font-variation-settings string
+function updateVariationSetting(settings, tag, value) {
+  const regex = new RegExp(`"${tag}"\\s*\\d+`, 'g');
+  if (settings.match(regex)) {
+    return settings.replace(regex, `"${tag}" ${value}`);
+  } else if (settings.trim() === '') {
+    return `"${tag}" ${value}`;
+  } else {
+    return settings.trim().replace(/,$/, '') + `, "${tag}" ${value}`;
+  }
+}
+
+// Apply parameters on page load
+window.addEventListener('DOMContentLoaded', applyURLParams);
+
+
+
+
+
+window.addEventListener('DOMContentLoaded', applyColorParamsFromURL);
+
+function applyColorParamsFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const previewText = document.getElementById('previewText');
+
+  // Handle text color
+  if (params.has('color')) {
+    const color = params.get('color');
+    if (/^([0-9a-fA-F]{3}){1,2}$/.test(color)) {
+      // previewText.style.color = `#${color}`;
+
+      // Set the CSS variable on the body
+      document.querySelector('body').style.setProperty('--editor-cl', `#${color}`);
+    }
+  }
+
+  // Handle background color
+  if (params.has('bgcolor')) {
+    const bgColor = params.get('bgcolor');
+    if (/^([0-9a-fA-F]{3}){1,2}$/.test(bgColor)) {
+      // previewText.style.backgroundColor = `#${bgColor}`;
+            document.querySelector('body').style.setProperty('--editor-bg', `#${bgColor}`);
+
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// labelFileUpload.addEventListener('drop', (e) => {
+  //   e.preventDefault();
+  //   labelFileUpload.classList.remove('drag-active');
+  //   inputFile.files = e.dataTransfer.files;
+  //   console.log(inputFile.files); // Optional: Log the uploaded files
+  //   uploadPopup.classList.add('hidden');
+  // });
+
+  // Handle file selection via the side input
+  // sideUploadButton.addEventListener('change', (e) => {
+  //   console.log(e.target.files); // Optional: Log the uploaded files
+  // });
+
+  
+
+// document.getElementById('removeNikkudBtn').addEventListener('click',  function () {
+//   const previewTextElement = document.getElementById('previewText');
+//   const nikkudPattern = /[\u05B0-\u05B1\u05B2\u05B3\u05B4\u05B5\u05B6\u05B7\u05B8\u05B9\u05BA\u05BB\u05BC\u05BD\u05BF\u05C1\u05C2\u05C3\u05C4\u05C5\u05C7\u0591\u0592\u0593\u0594\u0595\u0596\u0597\u0598\u0599\u059A\u059B\u059C\u059D\u059E\u059F\u05A0\u05A1\u05A2\u05A3\u05A4\u05A5\u05A6\u05A7\u05A8\u05A9\u05AA\u05AB\u05AC\u05AD\u05AE\u05AF]/g;
+  
+//   if (previewTextElement) {
+//     const previewText = previewTextElement.textContent || '';
+//     const convertedText = previewText.replace(nikkudPattern, '');
+//     previewTextElement.textContent = convertedText; // Update text content
+//   }
+// });
+
+// document.getElementById('removeTaamBtn').addEventListener('click', function () {
+//   const previewTextElement = document.getElementById('previewText');
+  
+//   if (previewTextElement) {
+//     const previewText = previewTextElement.textContent || '';
+//     const convertedText = previewText.replace(taamPattern, '');
+//     previewTextElement.textContent = convertedText; // Update text content
+//   }
+// });
